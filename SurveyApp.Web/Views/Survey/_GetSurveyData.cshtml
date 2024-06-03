@@ -1,0 +1,58 @@
+﻿@model Tuple<SurveyViewModel, FilledSurveyViewModel>
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+
+@for (int i = 0; i < Model.Item1.Questions.Count; i++)
+{
+    <div class="mb-4 questiondiv">
+        <input asp-for="@Model.Item2.FilledSurveyOptions[i].QuestionNo" name="FilledSurveyOptions[@i].QuestionNo" id="FilledSurveyOptions_@(i)__QuestionNo" value="@Model.Item1.Questions[i].Id" type="hidden" />
+
+        <div class="mb-3"> Q@(i + 1). @Model.Item1.Questions[i].Title</div>
+
+        @if (Model.Item1.Questions[i].Options.Where(x => x.IsTextValue == false).OrderBy(x => x.Rank).ToList().Count < 1)
+        {
+            //Add A Text Area
+            <textarea asp-for="@Model.Item2.FilledSurveyOptions[i].Value" name="FilledSurveyOptions[@i].Value" id="FilledSurveyOptions_@(i)__Value" rows="" class="form-control"></textarea>
+        }
+        else
+        {
+            var list = Model.Item1.Questions[i].Options.Where(x => !x.IsTextValue).OrderBy(x => x.Rank).ToList();
+            if (list.Count == 3)
+            {
+                //replace with Image
+
+                for (int j = 0; j < list.Count; j++)
+                {
+                    string classname = "";
+                    if (list[j].Title == "Satisfied") { classname = "happy"; }
+                    else if (list[j].Title == "Neutral") { classname = "neutral"; }
+                    else if (list[j].Title == "Dissatisfied") { classname = "sad"; }
+                    <div class="pl-2 mb-1 form-check form-check-inline">
+                        <input class="@classname" asp-for="@Model.Item2.FilledSurveyOptions[i].OptionId" name="FilledSurveyOptions[@i].OptionId" id="FilledSurveyOptions_@(i)__OptionId" value="@Model.Item1.Questions[i].Options[j].Id" type="radio" />
+                        @* <span>@Model.Item1.Questions[i].Options[j].Title</span> *@
+                    </div>
+                }
+            }
+            else
+            {
+                for (int j = 0; j < list.Count; j++)
+                {
+                    <div class="pl-2 mb-1">
+                        <input asp-for="@Model.Item2.FilledSurveyOptions[i].OptionId" name="FilledSurveyOptions[@i].OptionId" id="FilledSurveyOptions_@(i)__OptionId" value="@Model.Item1.Questions[i].Options[j].Id" type="radio" />
+                        <span>@Model.Item1.Questions[i].Options[j].Title</span>
+                    </div>
+                }
+            }
+        }
+
+    </div>
+
+}
+
+
+<div class="mt-3">
+    <a class="btn btn-outline-danger" asp-controller="Home" asp-action="Index">Cancel</a>
+    <button type="submit" class="btn btn-outline-success">Send Feedback</button>
+</div>

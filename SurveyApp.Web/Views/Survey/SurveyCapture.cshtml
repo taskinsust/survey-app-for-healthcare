@@ -1,0 +1,252 @@
+﻿@* @model SurveyApp.Web.Models.ViewModel.SurveyCollectionViewModel *@
+@model Tuple<SurveyViewModel, FilledSurveyViewModel>
+
+@{
+    ViewData["Title"] = "SurveyCapture";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/lib/alertifyjs/css/alertify.min.css" rel="stylesheet" />
+<style type="text/css">
+    form#answerform input[type=radio].happy, .neutral, .sad {
+        -webkit-appearance: none;
+        width: 90px;
+        height: 90px;
+        border: none;
+        cursor: pointer;
+        transition: border 0.2s ease;
+        filter: grayscale(100%);
+        margin: 0 5px;
+        transition: all 0.2s ease;
+    }
+
+    form#answerform input[type=radio]:hover, form#answerform input[type=radio]:checked {
+        filter: grayscale(0);
+        /* filter: pink;
+                                                                 */
+    }
+
+    form#answerform input[type=radio]:focus {
+        outline: 0;
+    }
+
+    form#answerform input[type=radio].happy {
+        background: url("https://res.cloudinary.com/turdlife/image/upload/v1492864443/happy_ampvnc.svg") center;
+        background-size: cover;
+    }
+
+    form#answerform input[type=radio].neutral {
+        background: url("https://res.cloudinary.com/turdlife/image/upload/v1492864443/neutral_t3q8hz.svg") center;
+        background-size: cover;
+    }
+
+    form#answerform input[type=radio].sad {
+        background: url("https://res.cloudinary.com/turdlife/image/upload/v1492864443/sad_bj1tuj.svg") center;
+        background-size: cover;
+    }
+
+    .mtt {
+        position: fixed;
+        bottom: 10px;
+        right: 20px;
+        color: #999;
+        text-decoration: none;
+    }
+
+        .mtt span {
+            color: #e74c3c;
+        }
+
+        .mtt:hover {
+            color: #666;
+        }
+
+            .mtt:hover span {
+                color: #c0392b;
+            }
+
+</style>
+<div class="container">
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>@ViewBag.ErrorMessage</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>@ViewBag.SuccessMessage</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            Patient Feedback on Healthcare service
+        </div>
+        <div class="card-body">
+
+            <form method="post" id="answerform" asp-action="Answer">
+                <input type="hidden" name="SurveyId" id="SurveyId" value="@Model.Item2.Survey.Id" />
+                <div class="row">
+                    <div class="col-md-6">
+                        @Html.DropDownList("CentreId", ViewBag.Centre, "Select a Centre", new { @class = "form-control" })
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" aria-describedby="patientIdHelp" placeholder="Enter Patient ID" id="PatientId" name="PatientId">
+                        <small id="patientIdHelp" class="form-text text-muted"> We'll never share your Patient ID with anyone else.</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <label>
+                        আপনি ব্র্যাক হেলথকেয়ার সেন্টার থেকে কোন কোন সেবা গ্রহন করেছেন?
+                        Which service(s) did you take from BRAC Healthcare ? (Select multiple)
+                    </label>
+                </div>
+
+                <div class="row">
+                    <div class="form-check">
+                        @for (var i = 0; i < Model.Item1.QuestionTypes.Count(); i++)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" value="@Model.Item1.QuestionTypes[i].Id" name="QuesTypesInt" />
+                                <label> @Model.Item1.QuestionTypes[i].Name </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="questype"></div>
+
+                </div>
+
+
+
+            </form>
+
+        </div>
+    </div>
+
+
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/alertifyjs/alertify.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#reset-btn").click(function () {
+                location.reload(); // Reload the page to reset it
+            });
+
+            $('input[type="checkbox"]').on('change', function () {
+                var surveyId = $('#SurveyId').val();
+                console.log(surveyId);
+
+                var checkedValues = $("input[name='QuesTypesInt']:checked").map(function () {
+                    return $(this).val();
+                }).get();
+
+                // Send AJAX request
+                $.ajax({
+                    url: '/survey/GetSurveyData',
+                    type: 'POST', // or 'GET' depending on your server-side implementation
+                    data: { selectedValues: checkedValues, surveyId: surveyId },
+                    success: function (response) {
+                        // Handle success response
+                        // $('.questype').html(response);
+                        $('.questype').hide().html(response).fadeIn(1000);
+
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error
+                    }
+                });
+            });
+
+            $('#answerform').on('submit', function (e) {
+                e.preventDefault();
+                var isValid = true;
+                // Remove existing error messages
+                $('.text-danger').remove();
+
+                // Validate Centre ID dropdown
+                var centreIdDropdown = $('#CentreId');
+                if (centreIdDropdown.val() === '') {
+                    isValid = false;
+                    centreIdDropdown.after('<div class="text-danger">Please select a Centre ID.</div>');
+                }
+
+                // Validate Patient ID input
+                var patientIdInput = $('#PatientId');
+                if (patientIdInput.val().trim() === '') {
+                    isValid = false;
+                    patientIdInput.after('<div class="text-danger">Please enter a Patient ID.</div>');
+                }
+
+                // Loop through each question
+                $('.questiondiv').each(function () {
+                    var questionDiv = $(this);
+                    var radioButtons = questionDiv.find('input[type="radio"]');
+                    var textArea = questionDiv.find('textarea');
+
+                    // Check if it's a radio button question
+                    if (radioButtons.length > 0) {
+                        if (!radioButtons.is(':checked')) {
+                            // If no radio button is selected, set isValid to false and show the message
+                            isValid = false;
+                            questionDiv.append('<div class="text-danger">Please select at least one answer.</div>');
+                        }
+                    }
+
+                });
+                var form = this;
+                if (isValid) {
+                    alertify.confirm('Are you sure?', 'You want to submit this feedback?', function () {
+                        form.submit();
+                    }, function () { alertify.error('Cancel') });
+                }
+                else {
+                    // go to upper portion of the template
+                    scrollToTop();
+                }
+            });
+
+            function scrollToTop() {
+                window.scrollTo(0, 0);
+
+            }
+            $('input[type="radio"]').change(function () {
+                $(this).closest('#answerform').find('.text-danger').remove();
+            });
+
+            // Remove error message when user interacts with Centre ID dropdown
+            $('#CentreId').change(function () {
+                $(this).next('.text-danger').remove();
+            });
+
+            // Remove error message when user interacts with Patient ID input
+            $('#PatientId').on('input', function () {
+                $(this).next('.text-danger').remove();
+            });
+
+            window.setTimeout(function () {
+                $(".alert").fadeTo(500, 0).slideUp(500, function () {
+                    $(this).remove();
+                });
+            }, 4000);
+        });
+
+
+    </script>
+}

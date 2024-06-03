@@ -4,29 +4,68 @@
     ViewData["Title"] = "Answer the Survey";
 }
 
-<div class="container w-50">
-    <h3 class="mb-2" style="font-size: 1.5rem">Survey: @Model.Item1.Title</h3>
+<link href="~/lib/alertifyjs/css/alertify.min.css" rel="stylesheet" />
 
-    <form method="post">
+<div class="container w-80">
+    @*     <h3 class="mb-2" style="font-size: 1.5rem">Survey: @Model.Item1.Title</h3>
+    *@
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>@ViewBag.ErrorMessage</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>@ViewBag.SuccessMessage</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+    }
+
+    <form method="post" id="answerform">
         <input type="hidden" name="SurveyId" id="SurveyId" value="@Model.Item1.Id" />
         <div class="form-group">
-            <label for="exampleInputEmail1">Email address</label>
-            <input type="email" class="form-control" aria-describedby="emailHelp" placeholder="Enter email" id="Email" name="Email">
-            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+            <div class="col-md-8">@Html.DropDownList("CentreId", ViewBag.Centre, "Select a Centre", new { @class = "form-control" })</div>
+
+
+            <label for="exampleInputEmail1"></label>
+            <input type="text" class="form-control" aria-describedby="patientIdHelp" placeholder="Enter Patient ID" id="PatientId" name="PatientId">
+            <small id="patientIdHelp" class="form-text text-muted"> We'll never share your Patient ID with anyone else.</small>
         </div>
 
         <h5 class="my-4">Questions</h5>
         @for (int i = 0; i < Model.Item1.Questions.Count; i++)
         {
-            <div class="mb-4">
-                <div class="mb-3">Q@(i+1). @Model.Item1.Questions[i].Title</div>
-                @for (int j = 0; j < Model.Item1.Questions[i].Options.Count; j++)
+            <div class="mb-4 questiondiv">
+                <input asp-for="@Model.Item2.FilledSurveyOptions[i].QuestionNo" name="FilledSurveyOptions[@i].QuestionNo" id="FilledSurveyOptions_@(i)__QuestionNo" value="@Model.Item1.Questions[i].Id" type="hidden" />
+
+                <div class="mb-3"> Q@(i + 1). @Model.Item1.Questions[i].Title</div>
+
+                @if (Model.Item1.Questions[i].Options.Where(x => x.IsTextValue == false).OrderBy(x => x.Rank).ToList().Count < 1)
                 {
-                    <div class="pl-2 mb-1">
-                        <input asp-for="@Model.Item2.FilledSurveyOptions[i].OptionId" name="FilledSurveyOptions[@i].OptionId" id="FilledSurveyOptions_@(i)__OptionId" value="@Model.Item1.Questions[i].Options[j].Id" type="radio" />
-                        <span>@Model.Item1.Questions[i].Options[j].Title</span>
-                    </div>
+                    //Add A Text Area
+                    <textarea asp-for="@Model.Item2.FilledSurveyOptions[i].Value" name="FilledSurveyOptions[@i].Value" id="FilledSurveyOptions_@(i)__Value" rows="5" class="form-control"></textarea>
                 }
+                else
+                {
+                    var list = Model.Item1.Questions[i].Options.Where(x => !x.IsTextValue).OrderBy(x => x.Rank).ToList();
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        <div class="pl-2 mb-1">
+                            <input asp-for="@Model.Item2.FilledSurveyOptions[i].OptionId" name="FilledSurveyOptions[@i].OptionId" id="FilledSurveyOptions_@(i)__OptionId" value="@Model.Item1.Questions[i].Options[j].Id" type="radio" />
+                            <span>@Model.Item1.Questions[i].Options[j].Title</span>
+                        </div>
+                    }
+                }
+
             </div>
         }
 
@@ -36,3 +75,75 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/alertifyjs/alertify.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            $('#answerform').on('submit', function (e) {
+                e.preventDefault();
+                var isValid = true;
+                // Remove existing error messages
+                $('.text-danger').remove();
+
+                // Validate Centre ID dropdown
+                var centreIdDropdown = $('#CentreId');
+                if (centreIdDropdown.val() === '') {
+                    isValid = false;
+                    centreIdDropdown.after('<div class="text-danger">Please select a Centre ID.</div>');
+                }
+
+                // Validate Patient ID input
+                var patientIdInput = $('#PatientId');
+                if (patientIdInput.val().trim() === '') {
+                    isValid = false;
+                    patientIdInput.after('<div class="text-danger">Please enter a Patient ID.</div>');
+                }
+
+                // Loop through each question
+                $('.questiondiv').each(function () {
+                    var questionDiv = $(this);
+                    var radioButtons = questionDiv.find('input[type="radio"]');
+                    var textArea = questionDiv.find('textarea');
+
+                    // Check if it's a radio button question
+                    if (radioButtons.length > 0) {
+                        if (!radioButtons.is(':checked')) {
+                            // If no radio button is selected, set isValid to false and show the message
+                            isValid = false;
+                            questionDiv.append('<div class="text-danger">Please select at least one answer.</div>');
+                        }
+                    }
+
+                });
+                var form = this;
+                if (isValid) {
+                    alertify.confirm('Are you sure?', 'You want to submit this answer?', function () {
+                        form.submit();
+                    },
+                        function () { alertify.error('Cancel') });
+                }
+                else {
+
+                }
+            });
+
+            $('input[type="radio"]').change(function () {
+                $(this).closest('#answerform').find('.text-danger').remove();
+            });
+
+            // Remove error message when user interacts with Centre ID dropdown
+            $('#CentreId').change(function () {
+                $(this).next('.text-danger').remove();
+            });
+
+            // Remove error message when user interacts with Patient ID input
+            $('#PatientId').on('input', function () {
+                $(this).next('.text-danger').remove();
+            });
+        });
+    </script>
+
+}

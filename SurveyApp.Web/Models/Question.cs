@@ -6,17 +6,21 @@ using System.Threading.Tasks;
 
 namespace SurveyApp.Web.Models
 {
-	public class Question
-	{
-		public int Id { get; set; }
+    public class Question
+    {
+        public int Id { get; set; }
 
-		[Required]
-		public string Title { get; set; }
+        [Required]
+        public string Title { get; set; }
 
-		public int SurveyId { get; set; }
+        public string ShortTitle { get; set; }
 
-		public Survey Survey { get; set; }
+        public int SurveyId { get; set; }
 
-		public List<Option> Options { get; set; }
-	}
+        public virtual Survey Survey { get; set; }
+
+        public virtual QuestionType QuestionType { get; set; }
+
+        public virtual List<Option> Options { get; set; }
+    }
 }

@@ -1,20 +1,32 @@
 ﻿@model SurveyListViewModel
 @using Humanizer
+@using SurveyApp.Core;
 
 @{
-    ViewData["Title"] = "Surveys";
+    ViewData["Title"] = "Survey List";
 }
+
+<link href="~/css/datatables.min.css" rel="stylesheet" />
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+    </ol>
+</nav>
 
 <div class="panel panel-default todo-panel">
     <div class="panel-heading mb-2">
-        <div class="d-flex justify-content-between align-items-center">
-            <h3 class="mb-0" style="font-size: 1.5rem">@ViewData["Title"]</h3>
+        <div class="justify-content-between align-items-center">
+            @*             <h3 class="mb-0" style="font-size: 1.5rem">@ViewData["Title"]</h3>
+            *@
+            <button class="btn btn-info" asp-area="" asp-controller="Survey" asp-action="Index">My Surveys</button>
             <button class="btn btn-primary" data-toggle="modal" data-target="#createModal">Create Survey</button>
         </div>
     </div>
-    <table class="table table-hover">
+    <table id="DataGrid" class="table table-hover table-bordered">
         <thead>
             <tr>
+
                 <td>@Html.DisplayNameFor(model => model.Surveys.FirstOrDefault().Title)</td>
                 <td># of @Html.DisplayNameFor(model => model.Surveys.FirstOrDefault().Questions)</td>
                 <td># of @Html.DisplayNameFor(model => model.Surveys.FirstOrDefault().FilledSurveys)</td>
@@ -22,7 +34,7 @@
                 <td>Action</td>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="">
             @foreach (var item in Model.Surveys)
             {
                 <tr>
@@ -31,8 +43,9 @@
                     <td>@item.FilledSurveys.Count</td>
                     <td>@item.CreatedAt.Humanize()</td>
                     <td>
-                        <a asp-route-Id="@item.Id" asp-action="Details" asp-controller="Survey" asp-area="" class="btn btn-outline-info btn-sm">Details</a>
+                        @*<a asp-route-Id="@item.Id" asp-action="Details" asp-controller="Survey" asp-area="" class="btn btn-outline-info btn-sm">Details</a> *@
                         <button class="btn btn-outline-success btn-sm share-button" data-toggle="modal" data-target="#shareModal" onclick="shareSurvey(@item.Id)">Share</button>
+                        <a asp-route-Id="@item.Id" asp-action="Download" asp-controller="Survey" asp-area="" class="btn btn-outline-primary btn-sm">Download</a>
                         <a asp-route-Id="@item.Id" asp-action="Delete" asp-controller="Survey" asp-area="" class="btn btn-outline-danger btn-sm">Delete</a>
                     </td>
                 </tr>
@@ -61,12 +74,12 @@
                         <input type="number" max="15" min="1" value="2" id="numberOfQuestions" class="form-control" placeholder="10">
                     </div>
                 </div>
-                <div class="row">
-                    <div class="form-group col-md-12">
-                        <label for="numberOfOptions">Number of options: </label>
-                        <input type="number" max="10" min="2" value="5" id="numberOfOptions" class="form-control" placeholder="5">
-                    </div>
+                @* <div class="row">
+                <div class="form-group col-md-12">
+                <label for="numberOfOptions">Number of options: </label>
+                <input type="number" max="10" min="2" value="5" id="numberOfOptions" class="form-control" placeholder="5">
                 </div>
+                </div> *@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -98,18 +111,143 @@
     </div>
 </div>
 
+<!-- pager -->
+<nav aria-label="Page navigation example">
+    @{
+        Pagination paging = ViewBag.paged;
+    }
+    <div style="margin: 0 auto">Page @paging.CurrentPage <span>of</span> @paging.TotalPages</div>
+    <ul class="pagination justify-content-end">
+        @* <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+        </li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item">
+        <a class="page-link" href="#">Next</a>
+        </li> *@
+
+        @if (paging.CurrentPage > 1)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("index")">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("index", new
+                             {
+                                 page = paging.CurrentPage - 1
+
+                             })">Previous</a>
+            </li>
+        }
+
+        @for (var page = paging.StartPage; page <= paging.EndPage; page++)
+        {
+            var cpage = page;
+            <li class="@(page == paging.CurrentPage ? "active" : "disabled")">
+                <a class="page-link" href="@Url.Action("index", new
+                             {
+                                 page = page
+
+                             })">@cpage</a>
+            </li>
+        }
+
+        @if (paging.CurrentPage < paging.TotalPages)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("index", new
+                             {
+                                 @page = paging.CurrentPage + 1
+
+                             })">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("index", new
+                             {
+                                 @page = paging.TotalPages
+
+                             })">Last</a>
+            </li>
+        }
+
+    </ul>
+</nav>
+@*
+<div class="pager">
+    @{
+        Pagination paging = ViewBag.paged;
+    }
+
+
+    @if (paging.EndPage > 1)
+    {
+        <div style="margin: 0 auto">Page @paging.CurrentPage <span>of</span> @paging.TotalPages</div>
+        <ul class="pagination">
+
+            @if (paging.CurrentPage > 1)
+            {
+                <li>
+                    <a href="@Url.Action("index")">First</a>
+                </li>
+                <li>
+                    <a href="@Url.Action("index", new
+                             {
+                                 page = paging.CurrentPage - 1
+
+                             })">Previous</a>
+                </li>
+            }
+
+            @for (var page = paging.StartPage; page <= paging.EndPage; page++)
+            {
+                var cpage = page;
+                <li class="@(page == paging.CurrentPage ? "active" : "")">
+                    <a href="@Url.Action("index", new
+                             {
+                                 page = page
+
+                             })">@cpage</a>
+                </li>
+            }
+
+            @if (paging.CurrentPage < paging.TotalPages)
+            {
+                <li>
+                    <a href="@Url.Action("index", new
+                             {
+                                 @page = paging.CurrentPage + 1
+
+                             })">Next</a>
+                </li>
+                <li>
+                    <a href="@Url.Action("index", new
+                             {
+                                 @page = paging.TotalPages
+
+                             })">Last</a>
+                </li>
+            }
+        </ul>
+    }
+
+</div> *@
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+    <script src="~/js/datatables.min.js"></script><script src="~/js/jquery.blockui.js"></script>
     <script>
-        $('.create-button').on('click', function() {
+        $('.create-button').on('click', function () {
             var questions = $('#numberOfQuestions').val();
-            var options = $('#numberOfOptions').val();
-            var url = "/survey/create?NumberOfQuestions=" + questions + "&NumberOfOptions=" + options;
+            //var options = $('#numberOfOptions').val();
+            // var url = "/survey/create?NumberOfQuestions=" + questions + "&NumberOfOptions=" + options;
+            var url = "/survey/create?NumberOfQuestions=" + questions;
             window.location.href = url;
         });
 
         function shareSurvey(id) {
-            $('.share-modal-input').val("@Url.Action("Answer", "Survey", null, Context.Request.Scheme)" + "/" + id);
+            $('.share-modal-input').val("@Url.Action("SurveyCapture", "Survey", null, Context.Request.Scheme)" + "/" + id);
             $('.share-modal-button').attr('data-clipboard-text', $('.share-modal-input').val());
             var clipboard = new ClipboardJS('.share-modal-button', {
                 container: document.getElementById('shareModal')
@@ -122,5 +260,50 @@
         $('#shareModal').on('hidden.bs.modal', function () {
             $('.copied-text').html('');
         });
+    </script>
+
+    <script>
+
+        // function dataTableRender() {
+        //     var pageSize = 20;
+
+        //     $('#DataGrid').dataTable({
+        //         "ordering": false,
+        //         destroy: true,
+        //         "processing": true,
+        //         searching: false,
+        //         serverSide: true,
+        //         "scrollX": true,
+        //         "bLengthChange": false,
+        //         "iDisplayLength": pageSize,
+        //         order: [[0, "desc"]],
+        //         ajax: {
+        //             url: "/survey/SurveyList",
+        //             type: 'POST',
+        //             beforeSend: function () {
+        //                 $.blockUI({
+        //                     timeout: 0,
+
+        //                 });
+        //             },
+        //             complete: function () {
+        //                 $.unblockUI();
+        //             },
+        //             data: function (d) {
+        //                 // d.clientId = $('#clientList').val();
+        //                 // d.linkId = $('#linkId').val();
+        //                 // d.finalplanId = $('#finalplanId').val();
+        //             }
+        //         }
+        //     });
+        // }
+
+        // $(document).ready(function () {
+        //     dataTableRender();
+        // });
+
+        // $(document).on("click", "#search", function () {
+        //     dataTableRender();
+        // });
     </script>
 }

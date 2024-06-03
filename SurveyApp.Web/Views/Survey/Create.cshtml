@@ -4,11 +4,21 @@
     ViewData["Title"] = "Create a Survey";
 }
 
+<link href="~/lib/alertifyjs/css/themes/bootstrap.min.css" rel="stylesheet" />
+<link href="~/lib/alertifyjs/css/themes/default.min.css" rel="stylesheet" />
+<link href="~/lib/alertifyjs/css/alertify.min.css" rel="stylesheet" />
+
+
 <div class="row">
     <div class="col-md-6 mx-auto">
         <h3 style="font-size: 1.5rem" class="my-3">Create a Survey</h3>
 
         <form method="post">
+            <div class="form-group">
+                <label for="exampleInputEmail1">Centre Name</label>
+                @Html.DropDownList("CentreId", ViewBag.Centre, "Select an Centre", new { @class = "form-control" })
+            </div>
+
             <div class="form-group">
                 <label asp-for="Title">@Html.DisplayNameFor(m => m.Title)</label>
                 <input type="text" class="form-control" placeholder="Enter title" asp-for="Title">
@@ -18,21 +28,253 @@
             <hr />
             @for (var i = 0; i < ViewBag.Numbers.NumberOfQuestions; i++)
             {
-                <div class="form-group mt-2 question-input">
-                    <label asp-for="Questions[i].Title">Question @(i+1)</label>
-                    <input type="text" class="form-control" placeholder="Enter a question" asp-for="Questions[i].Title">
-                </div>
-                @for (int j = 0; j < ViewBag.Numbers.NumberOfOptions; j++)
-                {
-                    <div class="form-group option-input">
-                        <label asp-for="Questions[i].Options[j].Title">Option @(j+1)</label>
-                        <input type="text" class="form-control" placeholder="Enter a option" asp-for="Questions[i].Options[j].Title">
+                var index = i + 1;
+                <div class="form-group mt-2 question-input" data-quesid="@index">
+                    <label asp-for="Questions[i].Title">Question @(i + 1)</label>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <input data-quesid="@index" type="text" class="form-control questions" placeholder="Enter a question" asp-for="Questions[i].Title" />
+                        </div>
+
+                        @* Add additional option here *@
+                        <button class="form-control btn btn-primary quesops" type="button" data-quesid="@index" data-toggle="modal" data-target="#createModal">Add Option</button>
+                        <button class="form-control btn btn-danger quesrv" type="button" data-quesid="@index">Remove</button>
                     </div>
-                }
+                </div>
                 <hr />
             }
+
             <a class="btn btn-outline-danger" asp-controller="Survey" asp-action="Index">Cancel</a>
-            <button type="submit" class="btn btn-primary">Create Survey</button>
+            <button type="button" class="btn btn-primary" id="surveybtn">Create Survey</button>
         </form>
     </div>
 </div>
+
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">Add Question Option</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input class="questionid" type="text" value="" hidden />
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="numberOfOptions">Number of options: </label>
+                        <input type="number" max="10" min="2" value="2" id="numberOfOptions" class="form-control" placeholder="5">
+                    </div>
+                </div>
+                @* <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="numberOfOptions">Option Type: </label>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                                Select Option
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="#">Default</a>
+                                <a class="dropdown-item" href="#">Face</a>
+                            </div>
+                        </div>
+                    </div>
+                </div> *@
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary create-button">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+    <script src="~/js/jquery.blockui.js"></script>
+    <script src="~/lib/alertifyjs/alertify.min.js"></script>
+
+    <script>
+
+        // JavaScript class based on C# classes
+        class Survey {
+            constructor() {
+                this.Id = 0;
+                this.Title = "";
+                this.Questions = [];
+            }
+        }
+
+        class Question {
+            constructor() {
+                this.Id = 0;
+                this.Title = "";
+                this.SurveyId = 0;
+                this.Survey = null;
+                this.Options = [];
+            }
+        }
+
+        class Option {
+            constructor() {
+                this.Id = 0;
+                this.Title = "";
+                this.QuestionId = 0;
+                this.Question = null;
+            }
+        }
+
+        $(".quesops").click(function () {
+            $("#createModal").find(".questionid").val($(this).attr("data-quesid"));
+            console.log('question id set');
+        });
+
+        $(".quesrv").click(function () {
+            var quesId = $(this).attr('data-quesid');
+            //console.log(quesId);
+
+            // Find the current question-input div using the data-quesid attribute
+            var currentQuestionDiv = $(".question-input[data-quesid='" + quesId + "']");
+
+            // Empty the existing option-input div content
+            currentQuestionDiv.find('.option-input').empty();
+        });
+
+        $('.create-button').on('click', function () {
+            var options = $('#numberOfOptions').val();
+            var quesId = $('.questionid').val();
+            //console.log(quesId);
+            var optionfield = "<div class='form-group option-input'>";
+            for (var j = 0; j < parseInt(options); j++) {
+                optionfield += "<label> Option " + (j + 1) + "</label> <input type='text' class='form-control' data-questionnumber= " + quesId + " placeholder='Enter an option'>";
+            }
+
+            optionfield += "</div>";
+            //console.log(optionfield);
+
+            // Find the current question-input div using the data-quesid attribute
+            var currentQuestionDiv = $(".question-input[data-quesid='" + quesId + "']");
+
+            // Empty the existing option-input div content
+            currentQuestionDiv.find('.option-input').remove();
+
+            // Append the optionfield after the current question-input div
+            currentQuestionDiv.append(optionfield);
+
+            // Close the modal
+            $('#createModal').modal('hide');
+        });
+
+        $('#surveybtn').on('click', function () {
+
+            let surveyInstance = new Survey();
+            surveyInstance.Title = $('#Title').val();
+
+            var questionData = [];
+
+            // Loop through each question
+            $('.question-input').each(function () {
+
+                var questionId = $(this).attr("data-quesid");
+                var questionTitle = $(this).find('.questions').val();
+                console.log("qid->" + questionId);
+                // Collect options for the current question
+                var optionData = [];
+                $(this).find('.option-input input[data-questionnumber="' + questionId + '"]').each(function () {
+                    var optionTitle = $(this).val();
+                    //console.log(optionTitle);
+                    console.log("oid->" + $(this).val());
+                    var option = new Option();
+                    option.Title = optionTitle;
+                    //option.QuestionId = questionId;
+
+                    optionData.push(option);
+                });
+
+                //console.log(optionData);
+
+                // Create a question object
+                var question = new Question()
+                //question.Id = questionId;
+                question.Title = questionTitle;
+                question.Options = optionData;
+
+                // Add the question object to the array
+                questionData.push(question);
+            });
+
+            surveyInstance.Questions = questionData;
+            console.log(surveyInstance);
+
+            alertify.confirm('Are you sure?', 'You want to create this survey', function () {
+                //send request to server end
+                $.ajax({
+                    url: '/Survey/CreateSurvey',
+                    type: 'POST',
+                    data: { surveyData: surveyInstance },
+                    beforeSend: function () {
+                        $.blockUI({
+                            css: {
+                                border: 'none',
+                                padding: '15px',
+                                backgroundColor: '#000',
+                                '-webkit-border-radius': '10px',
+                                '-moz-border-radius': '10px',
+                                opacity: .5,
+                                color: '#fff'
+                            }
+                        });
+                    },
+                    success: function (data) {
+                        $.unblockUI();
+                        if (data.isSuccess == true) {
+                            // Handle success
+                            $.blockUI({
+                                message: 'Thank you! survey saved successfully',
+                                fadeIn: 700,
+                                fadeOut: 700,
+                                timeout: 10000,
+                                showOverlay: false,
+                                centerY: false,
+                                css: {
+                                    width: '350px',
+                                    top: '10px',
+                                    left: '',
+                                    right: '10px',
+                                    border: 'none',
+                                    padding: '5px',
+                                    backgroundColor: '#000',
+                                    '-webkit-border-radius': '10px',
+                                    '-moz-border-radius': '10px',
+                                    opacity: .6,
+                                    color: '#fff'
+                                }
+                            });
+                        }
+                        else {
+                            $.blockUI({ message: '<h1><img src="busy.gif" /> ' + data.Message + '</h1>' });
+                            // alertify.alert('Sorry!', 'Operation Failed', function () { alertify.error('Failed! please try again.'); });
+                        }
+                        console.log('Data sent successfully:', data);
+                    },
+                    complete: function () {
+                        $.unblockUI();
+                    },
+
+                    error: function (data) {
+                        $.unblockUI();
+                        $.blockUI({ message: '<h1><img src="busy.gif" /> ' + data.Message + '</h1>' });
+                    }
+                });
+
+            }
+                , function () { alertify.error('Cancel') });
+
+
+        });
+
+    </script>
+}
