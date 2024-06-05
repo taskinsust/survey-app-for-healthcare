@@ -9,7 +9,7 @@ requirements:
     administrative privileges within the app.
 
 ## Tech Stack
--   ASP.NET Core 3.1
+-   ASP.NET Core 8
 -   Entity Framework 3.1.6
 -   ASP.NET Core Identity
 -   SQL Server
@@ -60,44 +60,6 @@ requirements:
 ## TODO
 
 -   [ ] Display if any form validation errors.
-
-## Screenshots
-
-### Home Page
-
-![Home Page](/screenshots/s_home_page.png)
-
-### Login Page
-
-![Login Page](/screenshots/s_login_page.png)
-
-### Surveys Page
-
-![Surveys Page](/screenshots/s_surveys.png)
-
-### Share Survey Modal
-
-![Share Survey Modal](/screenshots/s_share_survey.png)
-
-### Create Survey Modal
-
-![Create Survey Modal](/screenshots/s_create_survey_modal.png)
-
-### Create Survey Page
-
-![Create Survey Page](/screenshots/s_create_survey.png)
-
-### Answer Survey Page
-
-![Answer Survey Page](/screenshots/s_answer_survey.png)
-
-### Survey Details Page
-
-![Survey Details Page](/screenshots/s_survey_details_1.png)
-
-![Survey Details Page](/screenshots/s_survey_details_2.png)
-
----
 
 ## Credits
 
