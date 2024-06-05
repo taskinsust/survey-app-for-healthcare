@@ -237,6 +237,8 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
     <script src="~/js/datatables.min.js"></script><script src="~/js/jquery.blockui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <script>
         $('.create-button').on('click', function () {
             var questions = $('#numberOfQuestions').val();
@@ -244,6 +246,35 @@
             // var url = "/survey/create?NumberOfQuestions=" + questions + "&NumberOfOptions=" + options;
             var url = "/survey/create?NumberOfQuestions=" + questions;
             window.location.href = url;
+        });
+
+        // function shareSurvey(id) {
+
+        //     //Encrypt the ID using CryptoJS AES encryption
+        //     var encryptedId = CryptoJS.AES.encrypt(id.toString(), '129341').toString();
+
+        //     // Construct the encrypted URL
+        //     var baseUrl = '@Url.Action("SurveyCapture", "Survey", null, Context.Request.Scheme)';
+        //     var encryptedUrl = baseUrl + '/' + encodeURIComponent(encryptedId);
+
+
+        //     // Set the encrypted URL in the input field
+        //     $('.share-modal-input').val(encryptedUrl);
+
+        //     // Set the encrypted URL as the clipboard text
+        //     $('.share-modal-button').attr('data-clipboard-text', encryptedUrl);
+
+        //     var clipboard = new ClipboardJS('.share-modal-button', {
+        //         container: document.getElementById('shareModal')
+        //     });
+
+        //     clipboard.on('success', function () {
+        //         $('.copied-text').html('Copied!');
+        //     });
+        // }
+
+        $('#shareModal').on('hidden.bs.modal', function () {
+            $('.copied-text').html('');
         });
 
         function shareSurvey(id) {
@@ -260,50 +291,5 @@
         $('#shareModal').on('hidden.bs.modal', function () {
             $('.copied-text').html('');
         });
-    </script>
-
-    <script>
-
-        // function dataTableRender() {
-        //     var pageSize = 20;
-
-        //     $('#DataGrid').dataTable({
-        //         "ordering": false,
-        //         destroy: true,
-        //         "processing": true,
-        //         searching: false,
-        //         serverSide: true,
-        //         "scrollX": true,
-        //         "bLengthChange": false,
-        //         "iDisplayLength": pageSize,
-        //         order: [[0, "desc"]],
-        //         ajax: {
-        //             url: "/survey/SurveyList",
-        //             type: 'POST',
-        //             beforeSend: function () {
-        //                 $.blockUI({
-        //                     timeout: 0,
-
-        //                 });
-        //             },
-        //             complete: function () {
-        //                 $.unblockUI();
-        //             },
-        //             data: function (d) {
-        //                 // d.clientId = $('#clientList').val();
-        //                 // d.linkId = $('#linkId').val();
-        //                 // d.finalplanId = $('#finalplanId').val();
-        //             }
-        //         }
-        //     });
-        // }
-
-        // $(document).ready(function () {
-        //     dataTableRender();
-        // });
-
-        // $(document).on("click", "#search", function () {
-        //     dataTableRender();
-        // });
     </script>
 }

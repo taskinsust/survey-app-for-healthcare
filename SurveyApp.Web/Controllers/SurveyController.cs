@@ -8,6 +8,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -28,11 +29,12 @@ namespace SurveyApp.Web.Controllers
     {
         private readonly SurveyService _surveyService;
         private readonly UserManager<ApplicationUser> _userManager;
-
-        public SurveyController(SurveyService surveyService, UserManager<ApplicationUser> userManager)
+        private readonly IDataProtectionProvider _dataProtectionProvider;
+        public SurveyController(SurveyService surveyService, UserManager<ApplicationUser> userManager, IDataProtectionProvider dataProtectionProvider)
         {
             _surveyService = surveyService;
             _userManager = userManager;
+            _dataProtectionProvider = dataProtectionProvider;
         }
 
         public async Task<IActionResult> Index(int? page)
@@ -258,30 +260,6 @@ namespace SurveyApp.Web.Controllers
             return RedirectToAction("SurveyCapture", "Survey", new { type = 2, id = model.SurveyId, message = "Success! Survey has been captured." });
         }
 
-        //[AllowAnonymous]
-        //[HttpPost]
-        //public async Task<IActionResult> AnswerAjaxPost(questionAndAnswerData[] questionAndAnswerData)
-        //{
-        //    FilledSurveyViewModel model = new FilledSurveyViewModel();
-        //    List<FilledSurveyOption> FilledSurveyOption = new List<FilledSurveyOption>();
-        //    Survey survey = await _surveyService.GetSurveyByIdAsync(Convert.ToInt32(questionAndAnswerData[0].surveyId));
-
-        //    foreach (var question in questionAndAnswerData)
-        //    {
-        //        model.Survey = survey;
-        //        model.SurveyId = survey.Id;
-        //        model.Email = "taskin0909@yahoo.com";
-        //        model.FilledSurveyOptions.Add(new FilledSurveyOption()
-        //        {
-        //            OptionId = Convert.ToInt32(question.answerId),
-        //            FilledSurveyId = survey.Id,
-        //        });
-
-        //    }
-        //    return RedirectToAction("Index", "Home");
-
-        //}
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -302,11 +280,21 @@ namespace SurveyApp.Web.Controllers
 
         #region Version-2 Feedback Capture
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> SurveyCapture(int id, int type = 0, string message = "")
         {
             try
             {
+                // Decrypt the ID using ASP.NET Core Data Protection
+                //var protector = _dataProtectionProvider.CreateProtector("129341");
+                //var decryptedId = protector.Unprotect(id);
+                //if (!int.TryParse(decryptedId, out int surveyId))
+                //{
+                //    // Handle invalid or missing ID
+                //    return RedirectToAction("Index", "Home");
+                //}
+
                 var questypeList = await _surveyService.LoadQuestionTypeAsync();
                 if (id <= 0) return RedirectToAction("Index", "Home");
                 var survey = await _surveyService.GetSurveyByIdAsync(id);
@@ -381,18 +369,8 @@ namespace SurveyApp.Web.Controllers
         public async Task<FileStreamResult> Download(int id)
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            //if (currentUser == null) return Challenge();
-
-            //if (id <= 0) return RedirectToAction("Index");
-
-            //var survey = await _surveyService.GetSurveyOfUserByIdAsync(id, currentUser);
             var survey = await _surveyService.GetSurveyByIdAsync(id);
-            //if (survey == null) return RedirectToAction("Index");
-
-            //await _surveyService.DeleteSurveyAsync(survey, currentUser);
             return await _surveyService.DownloadReport(survey.Id);
-
-
         }
 
         #endregion

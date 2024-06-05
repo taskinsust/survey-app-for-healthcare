@@ -34,7 +34,7 @@ namespace SurveyApp.Web
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
-
+            services.AddDataProtection();
             services.AddScoped<SurveyService>();
         }
 
@@ -52,6 +52,17 @@ namespace SurveyApp.Web
             //    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             //    app.UseHsts();
             //}
+            app.Use(async (context, next) =>
+            {
+                context.Request.PathBase = "/"; // Ensure the base path is set correctly if needed
+                context.Request.Path = context.Request.Path.Value.Replace("//", "/"); // Replace double slashes
+
+                // Allow double escaping
+                context.Request.Path = context.Request.Path.Value.Replace("%252F", "%2F"); // Replace %252F with %2F
+
+                await next();
+            });
+
             app.UseDeveloperExceptionPage();
             app.UseDatabaseErrorPage();
 

@@ -44,7 +44,7 @@
         background-size: cover;
     }
 
-    .mtt {
+    /* .mtt {
         position: fixed;
         bottom: 10px;
         right: 20px;
@@ -62,7 +62,7 @@
 
             .mtt:hover span {
                 color: #c0392b;
-            }
+            } */
 
 </style>
 <div class="container">
@@ -91,7 +91,6 @@
             Patient Feedback on Healthcare service
         </div>
         <div class="card-body">
-
             <form method="post" id="answerform" asp-action="Answer">
                 <input type="hidden" name="SurveyId" id="SurveyId" value="@Model.Item2.Survey.Id" />
                 <div class="row">
@@ -124,19 +123,11 @@
                 </div>
 
                 <div class="row">
-
                     <div class="questype"></div>
-
                 </div>
-
-
-
             </form>
-
         </div>
     </div>
-
-
 </div>
 
 @section Scripts {
