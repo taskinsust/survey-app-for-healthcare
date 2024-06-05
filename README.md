@@ -9,7 +9,7 @@ requirements:
     administrative privileges within the app.
 
 ## Tech Stack
--   ASP.NET Core 3.1
+-   ASP.NET Core 8
 -   Entity Framework 3.1.6
 -   ASP.NET Core Identity
 -   SQL Server
