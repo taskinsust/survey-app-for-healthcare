@@ -331,6 +331,7 @@ namespace SurveyApp.Web.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> GetSurveyData(string[] selectedValues, int surveyId)
         {

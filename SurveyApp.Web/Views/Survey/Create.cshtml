@@ -39,7 +39,7 @@
 
                         @* Add additional option here *@
                         <button class="form-control btn btn-primary quesops" type="button" data-quesid="@index" data-toggle="modal" data-target="#createModal">Add Option</button>
-                        <button class="form-control btn btn-danger quesrv" type="button" data-quesid="@index">Remove</button>
+                        <button class="form-control btn btn-danger quesrv" type="button" data-quesid="@index">Remove Option</button>
                     </div>
                 </div>
                 <hr />
@@ -68,20 +68,7 @@
                         <input type="number" max="10" min="2" value="2" id="numberOfOptions" class="form-control" placeholder="5">
                     </div>
                 </div>
-                @* <div class="row">
-                    <div class="form-group col-md-12">
-                        <label for="numberOfOptions">Option Type: </label>
-                        <div class="dropdown">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                                Select Option
-                            </button>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Default</a>
-                                <a class="dropdown-item" href="#">Face</a>
-                            </div>
-                        </div>
-                    </div>
-                </div> *@
+                
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -169,48 +156,73 @@
         });
 
         $('#surveybtn').on('click', function () {
-
             let surveyInstance = new Survey();
-            surveyInstance.Title = $('#Title').val();
+            surveyInstance.Title = $('#Title').val().trim(); // Trim to remove leading/trailing spaces
+
+            var isValid = true;
+
+            // Validate survey title
+            if (surveyInstance.Title === '') {
+                $('#Title').siblings('.error-message').remove(); // Remove existing error message
+                $('#Title').after('<div class="error-message">Please enter a survey title.</div>');
+                isValid = false;
+            } else {
+                $('#Title').siblings('.error-message').remove(); // Remove error message if valid
+            }
 
             var questionData = [];
 
             // Loop through each question
             $('.question-input').each(function () {
-
                 var questionId = $(this).attr("data-quesid");
-                var questionTitle = $(this).find('.questions').val();
-                console.log("qid->" + questionId);
+                var questionTitle = $(this).find('.questions').val().trim(); // Trim to remove leading/trailing spaces
+
+                // Validate question title
+                if (questionTitle === '') {
+                    $(this).find('.questions').siblings('.error-message').remove(); // Remove existing error message
+                    $(this).find('.questions').after('<div class="error-message">Please enter a title for this question.</div>');
+                    isValid = false;
+                } else {
+                    $(this).find('.questions').siblings('.error-message').remove(); // Remove error message if valid
+                }
+
                 // Collect options for the current question
                 var optionData = [];
                 $(this).find('.option-input input[data-questionnumber="' + questionId + '"]').each(function () {
-                    var optionTitle = $(this).val();
-                    //console.log(optionTitle);
-                    console.log("oid->" + $(this).val());
+                    var optionTitle = $(this).val().trim(); // Trim to remove leading/trailing spaces
+
+                    // Validate option title
+                    if (optionTitle === '') {
+                        $(this).siblings('.error-message').remove(); // Remove existing error message
+                        $(this).after('<div class="error-message">Please enter an option.</div>');
+                        isValid = false;
+                    } else {
+                        $(this).siblings('.error-message').remove(); // Remove error message if valid
+                    }
+
                     var option = new Option();
                     option.Title = optionTitle;
-                    //option.QuestionId = questionId;
-
                     optionData.push(option);
                 });
 
-                //console.log(optionData);
-
-                // Create a question object
-                var question = new Question()
-                //question.Id = questionId;
-                question.Title = questionTitle;
-                question.Options = optionData;
-
-                // Add the question object to the array
-                questionData.push(question);
+                // Create a question object if title is not empty
+                if (questionTitle !== '') {
+                    var question = new Question();
+                    question.Title = questionTitle;
+                    question.Options = optionData;
+                    questionData.push(question);
+                }
             });
+
+            if (!isValid) {
+                return; // Prevent further execution if validation fails
+            }
 
             surveyInstance.Questions = questionData;
             console.log(surveyInstance);
 
             alertify.confirm('Are you sure?', 'You want to create this survey', function () {
-                //send request to server end
+                // Send request to server end
                 $.ajax({
                     url: '/Survey/CreateSurvey',
                     type: 'POST',
@@ -233,7 +245,7 @@
                         if (data.isSuccess == true) {
                             // Handle success
                             $.blockUI({
-                                message: 'Thank you! survey saved successfully',
+                                message: 'Thank you! Survey saved successfully',
                                 fadeIn: 700,
                                 fadeOut: 700,
                                 timeout: 10000,
@@ -253,28 +265,130 @@
                                     color: '#fff'
                                 }
                             });
-                        }
-                        else {
+                        } else {
                             $.blockUI({ message: '<h1><img src="busy.gif" /> ' + data.Message + '</h1>' });
-                            // alertify.alert('Sorry!', 'Operation Failed', function () { alertify.error('Failed! please try again.'); });
                         }
                         console.log('Data sent successfully:', data);
                     },
                     complete: function () {
                         $.unblockUI();
                     },
-
                     error: function (data) {
                         $.unblockUI();
                         $.blockUI({ message: '<h1><img src="busy.gif" /> ' + data.Message + '</h1>' });
                     }
                 });
 
-            }
-                , function () { alertify.error('Cancel') });
-
-
+            }, function () { alertify.error('Cancel') });
         });
+
+        // $('#surveybtn').on('click', function () {
+
+        //     let surveyInstance = new Survey();
+        //     surveyInstance.Title = $('#Title').val();
+
+        //     var questionData = [];
+
+        //     // Loop through each question
+        //     $('.question-input').each(function () {
+
+        //         var questionId = $(this).attr("data-quesid");
+        //         var questionTitle = $(this).find('.questions').val();
+        //         console.log("qid->" + questionId);
+        //         // Collect options for the current question
+        //         var optionData = [];
+        //         $(this).find('.option-input input[data-questionnumber="' + questionId + '"]').each(function () {
+        //             var optionTitle = $(this).val();
+        //             //console.log(optionTitle);
+        //             console.log("oid->" + $(this).val());
+        //             var option = new Option();
+        //             option.Title = optionTitle;
+        //             //option.QuestionId = questionId;
+
+        //             optionData.push(option);
+        //         });
+
+        //         //console.log(optionData);
+
+        //         // Create a question object
+        //         var question = new Question()
+        //         //question.Id = questionId;
+        //         question.Title = questionTitle;
+        //         question.Options = optionData;
+
+        //         // Add the question object to the array
+        //         questionData.push(question);
+        //     });
+
+        //     surveyInstance.Questions = questionData;
+        //     console.log(surveyInstance);
+
+        //     alertify.confirm('Are you sure?', 'You want to create this survey', function () {
+        //         //send request to server end
+        //         $.ajax({
+        //             url: '/Survey/CreateSurvey',
+        //             type: 'POST',
+        //             data: { surveyData: surveyInstance },
+        //             beforeSend: function () {
+        //                 $.blockUI({
+        //                     css: {
+        //                         border: 'none',
+        //                         padding: '15px',
+        //                         backgroundColor: '#000',
+        //                         '-webkit-border-radius': '10px',
+        //                         '-moz-border-radius': '10px',
+        //                         opacity: .5,
+        //                         color: '#fff'
+        //                     }
+        //                 });
+        //             },
+        //             success: function (data) {
+        //                 $.unblockUI();
+        //                 if (data.isSuccess == true) {
+        //                     // Handle success
+        //                     $.blockUI({
+        //                         message: 'Thank you! survey saved successfully',
+        //                         fadeIn: 700,
+        //                         fadeOut: 700,
+        //                         timeout: 10000,
+        //                         showOverlay: false,
+        //                         centerY: false,
+        //                         css: {
+        //                             width: '350px',
+        //                             top: '10px',
+        //                             left: '',
+        //                             right: '10px',
+        //                             border: 'none',
+        //                             padding: '5px',
+        //                             backgroundColor: '#000',
+        //                             '-webkit-border-radius': '10px',
+        //                             '-moz-border-radius': '10px',
+        //                             opacity: .6,
+        //                             color: '#fff'
+        //                         }
+        //                     });
+        //                 }
+        //                 else {
+        //                     $.blockUI({ message: '<h1><img src="busy.gif" /> ' + data.Message + '</h1>' });
+        //                     // alertify.alert('Sorry!', 'Operation Failed', function () { alertify.error('Failed! please try again.'); });
+        //                 }
+        //                 console.log('Data sent successfully:', data);
+        //             },
+        //             complete: function () {
+        //                 $.unblockUI();
+        //             },
+
+        //             error: function (data) {
+        //                 $.unblockUI();
+        //                 $.blockUI({ message: '<h1><img src="busy.gif" /> ' + data.Message + '</h1>' });
+        //             }
+        //         });
+
+        //     }
+        //         , function () { alertify.error('Cancel') });
+
+
+        // });
 
     </script>
 }

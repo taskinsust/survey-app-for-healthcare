@@ -1,5 +1,4 @@
-﻿@* @model SurveyApp.Web.Models.ViewModel.SurveyCollectionViewModel *@
-@model Tuple<SurveyViewModel, FilledSurveyViewModel>
+﻿@model Tuple<SurveyViewModel, FilledSurveyViewModel>
 
 @{
     ViewData["Title"] = "SurveyCapture";
@@ -19,16 +18,6 @@
         transition: all 0.2s ease;
     }
 
-    form#answerform input[type=radio]:hover, form#answerform input[type=radio]:checked {
-        filter: grayscale(0);
-        /* filter: pink;
-                                                                 */
-    }
-
-    form#answerform input[type=radio]:focus {
-        outline: 0;
-    }
-
     form#answerform input[type=radio].happy {
         background: url("https://res.cloudinary.com/turdlife/image/upload/v1492864443/happy_ampvnc.svg") center;
         background-size: cover;
@@ -44,27 +33,27 @@
         background-size: cover;
     }
 
-    /* .mtt {
-        position: fixed;
-        bottom: 10px;
-        right: 20px;
-        color: #999;
-        text-decoration: none;
+    /* Specific color adjustments based on class */
+    form#answerform input[type=radio].happy:hover,
+    form#answerform input[type=radio].happy:checked {
+        filter: hue-rotate(262deg) brightness(1.2) saturate(1.2); /* Green tint */
     }
 
-        .mtt span {
-            color: #e74c3c;
-        }
+    form#answerform input[type=radio].neutral:hover,
+    form#answerform input[type=radio].neutral:checked {
+        filter: hue-rotate(44deg) brightness(1.2) saturate(1.2); /* Yellow tint */
+    }
 
-        .mtt:hover {
-            color: #666;
-        }
+    form#answerform input[type=radio].sad:hover,
+    form#answerform input[type=radio].sad:checked {
+        filter: hue-rotate(162deg) brightness(1.2) saturate(1.2); /* Red tint */
+    }
 
-            .mtt:hover span {
-                color: #c0392b;
-            } */
-
+    form#answerform input[type=radio]:focus {
+        outline: 0;
+    }
 </style>
+
 <div class="container">
     @if (ViewBag.ErrorMessage != null)
     {
@@ -217,9 +206,12 @@
                 window.scrollTo(0, 0);
 
             }
-            $('input[type="radio"]').change(function () {
+
+            $(document).on('change', 'input[type="radio"]', function () {
+                console.log('New event fired');
                 $(this).closest('#answerform').find('.text-danger').remove();
             });
+
 
             // Remove error message when user interacts with Centre ID dropdown
             $('#CentreId').change(function () {
