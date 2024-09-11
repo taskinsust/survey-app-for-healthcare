@@ -1,0 +1,60 @@
+﻿@model IEnumerable<SurveyApp.Web.Models.ViewModel.FeedbackViewModel>
+
+@{
+    ViewData["Title"] = "FeedbackList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/datatables.min.css" />
+
+<div class="card">
+    <div class="card-header">Survey Feedback List</div>
+
+    <div class="card-body">
+        <table id="example" class="table table-hover" style="width:100%">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.CentreName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.CreatedAt)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.PatientId)
+                    </th>
+
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CentreName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreatedAt)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.PatientId)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Details", "FeedbackDetail", new { surveyId = item.SurveyId, patientId = item.PatientId, surveycollectionDate = item.CreatedAt })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/js/datatables.min.js"></script>
+    <script>
+        new DataTable('#example');
+    </script>
+}

@@ -1,11 +1,9 @@
-﻿namespace SurveyApp.Web.Models
+﻿namespace SurveyApp.Web.Models.ViewModel
 {
-    public class Center
+    public class CentreSurveyViewModel
     {
-        public int Id { get; set; }
         public string Name { get; set; }
-        public string Address { get; set; }
-        public string Contact { get; set; }
+        public int SurveyCount { get; set; }
 
         public string IconClass { get; set; }
         public string TextClass { get; set; }

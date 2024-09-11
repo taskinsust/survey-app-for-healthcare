@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using SurveyApp.Web.Areas.Identity.Data;
 using SurveyApp.Web.Data;
 using SurveyApp.Web.Models;
+using SurveyApp.Web.Models.ViewModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -230,55 +231,7 @@ namespace SurveyApp.Web.Services
 
             return resultset;
 
-            //var result = from s in _context.Surveys
-            //             join q in _context.Questions on s.Id equals q.SurveyId
-            //             join qt in _context.QuestionType on q.QuestionType.Id equals qt.Id into qTypeGroup
-            //             from qt in qTypeGroup.DefaultIfEmpty()
-            //             where s.Id == id && (selectedValues.ToString().Contains(Convert.ToString(qt.Id)) || qt=null)
-            //             select q;
-            //if (selectedValues.Length == 0)
-            //{
-            //    var result = from s in _context.Surveys
-            //                 join q in _context.Questions on s.Id equals q.SurveyId
 
-            //                 join qt in _context.QuestionType on q.QuestionType.Id equals qt.Id into res
-            //                 from c in res.DefaultIfEmpty()
-            //                 where s.Id == id && q.QuestionType.Id.Equals(null)
-            //                 select q;
-            //    return result.ToList<Question>();
-
-            //}
-            //else
-            //{
-            //    var result = from s in _context.Surveys
-            //                 join q in _context.Questions on s.Id equals q.SurveyId
-            //                 join qt in _context.QuestionType on q.QuestionType.Id equals qt.Id
-            //                 where s.Id == id && (selectedValues.Contains(Convert.ToString(qt.Id)) || q.QuestionType.Id.Equals(null))
-            //                 select q;
-
-            //    return result.ToList<Question>();
-            //}
-            //var questypeids = string.Join(",", selectedValues);
-            //string sql = @" select q.* from Surveys s 
-            //    inner join Questions q on q.SurveyId = s.Id
-            //    left join [dbo].[QuestionTypes] qt on qt.id = q.questiontypeid
-            //    where s.Id = " + id;
-            //if (!questypeids.IsNullOrEmpty())
-            //    sql += @" and (qt.Id in (" + questypeids + ") or q.questiontypeid is null)";
-            //else sql += @" and q.questiontypeid is null";
-
-            //using (con = new SqlConnection(CONNSTR))
-            //{
-            //    con.Open();
-            //    da = new SqlDataAdapter(sql, con);
-            //    da.SelectCommand.CommandTimeout = 250; //seconds
-            //    DataTable dt = new DataTable();
-            //    da.Fill(dt);
-
-            //    List<Question> ques = ConvertToList<Question>(dt);
-            //    con.Close();
-            //    return ques;
-            //}
         }
         #endregion
 
@@ -336,22 +289,9 @@ namespace SurveyApp.Web.Services
                 firstTime = false;
             }
 
-            //if (ResultsData.Rows.Count > 0)
-            //{
-            //    reader.Close();
-            //    return await ExportToOxml(firstTime, "survey_report", ResultsData);
-            //    ResultsData.Clear();
-            //}
-
             reader.Close();
 
             return await ExportToOxml(firstTime, "survey_report", ResultsData);
-            //else if (ResultsData.Rows.Count <= 0)
-            //{
-            //    isResultEmpty = true;
-            //}
-            // Call Close when done reading.
-            //reader.Close();
 
         }
 
@@ -615,7 +555,8 @@ namespace SurveyApp.Web.Services
 
         internal int CountTotalFeedback()
         {
-            string sql = @" SELECT count (fso.Id) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId]";
+            //string sql = @" SELECT count (fso.Id) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId]";
+            string sql = @" select count(*) from [dbo].[FilledSurveys]";
 
             using (con = new SqlConnection(CONNSTR))
             {
@@ -634,10 +575,14 @@ namespace SurveyApp.Web.Services
         /// <returns></returns>
         internal int CountFromKazipara()
         {
-            string sql = @" SELECT count(*) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId]
-inner join Surveys s on s.id = fs.SurveyId
-inner join Center c on c.id = fs.CenterId
-where c.Id =1";
+            //            string sql = @" SELECT count(*) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId]
+            //inner join Surveys s on s.id = fs.SurveyId
+            //inner join Center c on c.id = fs.CenterId
+            //where c.Id =1";
+            string sql = @" SELECT count(*) from [dbo].[FilledSurveys] fs 
+                            inner join Surveys s on s.id = fs.SurveyId
+                            inner join Center c on c.id = fs.CenterId
+                            where c.Id =1";
 
             using (con = new SqlConnection(CONNSTR))
             {
@@ -652,10 +597,14 @@ where c.Id =1";
 
         internal int CountFromUttara()
         {
-            string sql = @" SELECT count(*) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId]
-inner join Surveys s on s.id = fs.SurveyId
-inner join Center c on c.id = fs.CenterId
-where c.Id =2";
+            //            string sql = @" SELECT count(*) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId]
+            //inner join Surveys s on s.id = fs.SurveyId
+            //inner join Center c on c.id = fs.CenterId
+            //where c.Id =2";
+            string sql = @" SELECT count(*) from [dbo].[FilledSurveys] fs 
+                            inner join Surveys s on s.id = fs.SurveyId
+                            inner join Center c on c.id = fs.CenterId
+                            where c.Id =2";
 
             using (con = new SqlConnection(CONNSTR))
             {
@@ -666,8 +615,8 @@ where c.Id =2";
                 con.Close();
                 return resultCount;
             }
-
         }
+
         internal int CountUniqueFeedback()
         {
             string sql = @"SELECT count (distinct fs.PatientId) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId]";
@@ -683,5 +632,101 @@ where c.Id =2";
             }
         }
 
+        internal List<FeedbackViewModel> LoadLastFiveFeedback()
+        {
+            string sql = @"select Top(5) fs.CreatedAt, fs.PatientId, c.Name CentreName, s.Title Survey from FilledSurveys fs inner join Center c on c.Id = fs.CenterId inner join Surveys s on s.id = fs.SurveyId order by fs.id desc";
+
+            using (con = new SqlConnection(CONNSTR))
+            {
+                con.Open();
+                cmd = new SqlCommand(sql, con);
+                cmd.CommandTimeout = 250; //seconds
+                SqlDataReader reader = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                List<FeedbackViewModel> list = ConvertToList<FeedbackViewModel>(dt);
+                return list;
+            }
+        }
+
+        internal dynamic CountTodaysFeedback()
+        {
+            string sql = @"SELECT count (distinct fs.PatientId) from [FilledSurveyOption] fso inner join [dbo].[FilledSurveys] fs on fs.id = fso.[FilledSurveyId] where CAST(fs.CreatedAt as date) = CAST(getdate() as date)";
+
+            using (con = new SqlConnection(CONNSTR))
+            {
+                con.Open();
+                cmd = new SqlCommand(sql, con);
+                cmd.CommandTimeout = 250; //seconds
+                int resultCount = Convert.ToInt32(cmd.ExecuteScalar());
+                con.Close();
+                return resultCount;
+            }
+        }
+
+        internal List<FeedbackViewModel> LoadFeedback()
+        {
+            string sql = @"select fs.CreatedAt, fs.PatientId, c.Name CentreName, s.Title Survey, s.Id SurveyId from FilledSurveys fs inner join Center c on c.Id = fs.CenterId inner join Surveys s on s.id = fs.SurveyId order by fs.id desc";
+
+            using (con = new SqlConnection(CONNSTR))
+            {
+                con.Open();
+                cmd = new SqlCommand(sql, con);
+                cmd.CommandTimeout = 250; //seconds
+                SqlDataReader reader = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                List<FeedbackViewModel> list = ConvertToList<FeedbackViewModel>(dt);
+                return list;
+            }
+        }
+
+        internal List<CentreSurveyViewModel> LoadCentreWiseSurveyCount()
+        {
+            string sql = @" SELECT c.Name, count(c.Name) SurveyCount, [dbo].[getCentreButtonbyName](c.id) [ButtonClass] , [dbo].[getCentreIconbyName](c.Id) [IconClass], [dbo].[getCentreTextbyName](c.Id) [TextClass] from [dbo].[FilledSurveys] fs 
+                            inner join Surveys s on s.id = fs.SurveyId
+                            inner join Center c on c.id = fs.CenterId
+							group by c.Id, c.Name";
+
+            using (con = new SqlConnection(CONNSTR))
+            {
+                con.Open();
+                cmd = new SqlCommand(sql, con);
+                cmd.CommandTimeout = 250; //seconds
+                SqlDataReader reader = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                List<CentreSurveyViewModel> list = ConvertToList<CentreSurveyViewModel>(dt);
+                return list;
+            }
+        }
+
+        internal List<SurveyResultViewModel> LoadFeedbackDetails(int surveyId, string patientId, string surveycollectionDate)
+        {
+            string sql = @" SELECT s.Title, C.Name 'Centre', fs.CreatedAt Surveydate, fs.PatientId, Q.ShortTitle 'Question', o.Title 'Answer'
+               FROM dbo.FilledSurveys fs
+               INNER JOIN dbo.FilledSurveyOption fso ON fs.Id = fso.FilledSurveyId
+               INNER JOIN dbo.Options o ON fso.OptionId = o.Id
+               INNER JOIN Questions q on q.Id = o.QuestionId
+               INNER JOIN Center c ON c.Id = fS.CenterId
+               INNER JOIN Surveys s on s.Id = fs.SurveyId
+               Where s.Id =" + surveyId + " and fs.PatientId = '" + patientId + "' and CAST(fs.CreatedAt as date) = CAST('" + surveycollectionDate + "' as date)";
+
+            using (con = new SqlConnection(CONNSTR))
+            {
+                con.Open();
+                cmd = new SqlCommand(sql, con);
+                cmd.CommandTimeout = 250; //seconds
+                SqlDataReader reader = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                List<SurveyResultViewModel> list = ConvertToList<SurveyResultViewModel>(dt);
+                return list;
+            }
+        }
     }
 }

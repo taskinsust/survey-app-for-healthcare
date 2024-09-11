@@ -11,9 +11,7 @@ namespace SurveyApp.Core
     {
         public static string GetDetailsLink(string action, string controller, long id, string tooltip = "")
         {
-            //<a asp-route-Id="@item.Id" asp-action="Details" asp-controller="Survey" asp-area="" class="btn btn-outline-info btn-sm">Details</a>
             var link = @" <a data-toggle='tooltip' title='" + tooltip + "' data-placement='bottom' asp-route-Id='" + id + "' asp-action= '" + action + "' asp-controller='" + controller + "' asp-area='' class='btn btn-outline-info btn-sm'> Details </a>";
-
             return link;
         }
 

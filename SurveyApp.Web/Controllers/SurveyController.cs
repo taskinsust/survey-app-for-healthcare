@@ -30,80 +30,106 @@ namespace SurveyApp.Web.Controllers
         private readonly SurveyService _surveyService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDataProtectionProvider _dataProtectionProvider;
-        public SurveyController(SurveyService surveyService, UserManager<ApplicationUser> userManager, IDataProtectionProvider dataProtectionProvider)
+
+        private readonly ILogger<SurveyController> _logger;
+
+        public SurveyController(SurveyService surveyService, UserManager<ApplicationUser> userManager, 
+            IDataProtectionProvider dataProtectionProvider, ILogger<SurveyController> logger)
         {
             _surveyService = surveyService;
             _userManager = userManager;
             _dataProtectionProvider = dataProtectionProvider;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index(int? page)
         {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null) return Challenge();
-
-            int currentPageIndex = page.HasValue ? page.Value : 1;
-            var surveys = await _surveyService.GetAllSurveysAsync(currentUser, currentPageIndex);
-            int surveycount = await _surveyService.CountSurveyAsync(currentUser);
-            var paging = new Pagination(surveycount, currentPageIndex, 10);
-
-            ViewBag.paged = paging;
-            var model = new SurveyListViewModel()
+            try
             {
-                Surveys = surveys.ToArray()
-            };
-            return View(model);
+                _logger.LogDebug("Test Debug Message!!");
+                //throw new Exception();
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null) return Challenge();
+
+                int currentPageIndex = page.HasValue ? page.Value : 1;
+                var surveys = await _surveyService.GetAllSurveysAsync(currentUser, currentPageIndex);
+                int surveycount = await _surveyService.CountSurveyAsync(currentUser);
+                var paging = new Pagination(surveycount, currentPageIndex, 10);
+
+                ViewBag.paged = paging;
+                var model = new SurveyListViewModel()
+                {
+                    Surveys = surveys.ToArray()
+                };
+                return View(model);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                throw e;
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> SurveyList(int draw = 0, int start = 0, int length = 0,
             string clientId = "", string linkId = "", string finalplanId = "")
         {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null) return Challenge();
-            var surveys = await _surveyService.GetAllSurveysAsync(currentUser, start, length);
-            int surveycount = await _surveyService.CountSurveyAsync(currentUser);
-
-            var data = new List<object>();
-
-            int sl = start + 1;
-
-            foreach (var d in surveys)
+            try
             {
-                var str = new List<string>();
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null) return Challenge();
+                var surveys = await _surveyService.GetAllSurveysAsync(currentUser, start, length);
+                int surveycount = await _surveyService.CountSurveyAsync(currentUser);
 
-                str.Add(sl.ToString());
-                str.Add(d.Title);
-                str.Add(d.Questions.Count.ToString());
-                str.Add(d.FilledSurveys.Count.ToString());
-                str.Add(d.CreatedAt.ToString());
-                str.Add(LinkGenerationEngine.GetDetailsLink("Details", "Survey", d.Id, "") + LinkGenerationEngine.GetShareLink(d.Id, "generate sharable link") + LinkGenerationEngine.GetDeleteLink("Delete", "Survey", d.Id, "delete this survey permanantly"));
+                var data = new List<object>();
 
-                data.Add(str);
-                sl++;
+                int sl = start + 1;
+
+                foreach (var d in surveys)
+                {
+                    var str = new List<string>();
+
+                    str.Add(sl.ToString());
+                    str.Add(d.Title);
+                    str.Add(d.Questions.Count.ToString());
+                    str.Add(d.FilledSurveys.Count.ToString());
+                    str.Add(d.CreatedAt.ToString());
+                    str.Add(LinkGenerationEngine.GetDetailsLink("Details", "Survey", d.Id, "") + LinkGenerationEngine.GetShareLink(d.Id, "generate sharable link") + LinkGenerationEngine.GetDeleteLink("Delete", "Survey", d.Id, "delete this survey permanantly"));
+
+                    data.Add(str);
+                    sl++;
+                }
+                return Json(new
+                {
+                    draw = draw,
+                    recordsTotal = surveycount,
+                    recordsFiltered = surveycount,
+                    start = start,
+                    length = length,
+                    data = new List<object>()
+                });
             }
-            return Json(new
+            catch (Exception e)
             {
-                draw = draw,
-                recordsTotal = surveycount,
-                recordsFiltered = surveycount,
-                start = start,
-                length = length,
-                data = data
-            });
-
+                _logger.LogError(e.Message);
+                return Json(new
+                {
+                    draw = draw,
+                    recordsTotal = 0,
+                    recordsFiltered = 0,
+                    start = start,
+                    length = length,
+                    data = new List<object>()
+                });
+            }
         }
 
         public IActionResult Create(SurveyCreateViewModel model)
         {
             int maxQuestions = 15;
-            //int maxOptions = 10;
-
             bool isInvalid = model == null
                 || model.NumberOfQuestions <= 0
-                //|| model.NumberOfOptions <= 1
                 || model.NumberOfQuestions > maxQuestions;
-            //|| model.NumberOfOptions > maxOptions;
 
             if (isInvalid) return NotFound();
             List<Center> centers = _surveyService.LoadCenters();
@@ -118,25 +144,30 @@ namespace SurveyApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePost([Bind("Id", "Title", "Questions")] SurveyViewModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                string messages = string.Join("; ", ModelState.Values
-                                                                                .SelectMany(x => x.Errors)
-                                                                                .Select(x => x.ErrorMessage));
+                if (!ModelState.IsValid)
+                {
+                    string messages = string.Join("; ", ModelState.Values
+                                                  .SelectMany(x => x.Errors)
+                                                  .Select(x => x.ErrorMessage));
+                    return RedirectToAction("Create");
+                }
 
-                return RedirectToAction("Create");
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null) return Challenge();
+
+                var isSuccessful = await _surveyService.CreateSurveyAsync(model, currentUser);
+
+                if (!isSuccessful)
+                {
+                    return RedirectToAction("Create");
+                }
             }
-
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null) return Challenge();
-
-            var isSuccessful = await _surveyService.CreateSurveyAsync(model, currentUser);
-
-            if (!isSuccessful)
+            catch (Exception e)
             {
-                return RedirectToAction("Create");
+                _logger.LogError(e.Message);
             }
-
             return RedirectToAction("Index");
         }
 
@@ -146,9 +177,8 @@ namespace SurveyApp.Web.Controllers
             if (!ModelState.IsValid)
             {
                 string messages = string.Join("; ", ModelState.Values
-                                                                                .SelectMany(x => x.Errors)
-                                                                                .Select(x => x.ErrorMessage));
-
+                                             .SelectMany(x => x.Errors)
+                                             .Select(x => x.ErrorMessage));
                 return RedirectToAction("Create");
             }
 
@@ -244,20 +274,29 @@ namespace SurveyApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AnswerPost(FilledSurveyViewModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-                return RedirectToAction("Answer");
+                if (!ModelState.IsValid)
+                {
+                    string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+                    return RedirectToAction("Answer");
+                }
+
+                var isSuccessful = await _surveyService.CreateFilledSurveyAsync(model);
+
+                if (!isSuccessful)
+                {
+                    //show a error message here 
+                    return RedirectToAction("SurveyCapture", "Survey", new { type = 1, id = model.SurveyId, message = "Sorry! Something went wrong. please try again." });
+                }
+                return RedirectToAction("SurveyCapture", "Survey", new { type = 2, id = model.SurveyId, message = "Success! Survey has been captured." });
             }
-
-            var isSuccessful = await _surveyService.CreateFilledSurveyAsync(model);
-
-            if (!isSuccessful)
+            catch (Exception ex)
             {
-                //show a error message here 
+                _logger.LogError(ex.Message);
                 return RedirectToAction("SurveyCapture", "Survey", new { type = 1, id = model.SurveyId, message = "Sorry! Something went wrong. please try again." });
             }
-            return RedirectToAction("SurveyCapture", "Survey", new { type = 2, id = model.SurveyId, message = "Success! Survey has been captured." });
+
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -286,15 +325,6 @@ namespace SurveyApp.Web.Controllers
         {
             try
             {
-                // Decrypt the ID using ASP.NET Core Data Protection
-                //var protector = _dataProtectionProvider.CreateProtector("129341");
-                //var decryptedId = protector.Unprotect(id);
-                //if (!int.TryParse(decryptedId, out int surveyId))
-                //{
-                //    // Handle invalid or missing ID
-                //    return RedirectToAction("Index", "Home");
-                //}
-
                 var questypeList = await _surveyService.LoadQuestionTypeAsync();
                 if (id <= 0) return RedirectToAction("Index", "Home");
                 var survey = await _surveyService.GetSurveyByIdAsync(id);
@@ -327,6 +357,7 @@ namespace SurveyApp.Web.Controllers
             }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 throw e;
             }
         }
@@ -360,7 +391,11 @@ namespace SurveyApp.Web.Controllers
 
                 return PartialView("_GetSurveyData", tupleModel);
             }
-            catch (Exception e) { throw e; }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                throw e;
+            }
         }
 
         #endregion
@@ -369,7 +404,6 @@ namespace SurveyApp.Web.Controllers
 
         public async Task<FileStreamResult> Download(int id)
         {
-            var currentUser = await _userManager.GetUserAsync(User);
             var survey = await _surveyService.GetSurveyByIdAsync(id);
             return await _surveyService.DownloadReport(survey.Id);
         }

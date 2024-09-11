@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using SurveyApp.Web.Models.ViewModel
 @inject SignInManager<SurveyApp.Web.Areas.Identity.Data.ApplicationUser> SignInManager
 @inject UserManager<SurveyApp.Web.Areas.Identity.Data.ApplicationUser> UserManager
 
@@ -15,288 +16,146 @@
         <div class="row">
             <main class="col-md-12" id="main">
                 <section class="spacethis">
-                    <h3 class="title">Overview</h3>
+                    <h3 class="title">Dashboard Overview</h3>
                     <div class="row mobile-scrollable">
-                        <div class="col-md-3">
+
+                        <div class="col-md-4">
                             <div class="dash-card">
                                 <i class="fa fa-bars"></i>
                                 <p>Total Feedback</p>
                                 <h1 class="text-success">@ViewBag.totalFeedback</h1>
-                                @*                                 <button type="button" class="btn btn-theme">Know More</button>
-                                *@
+                                <a class="btn btn-outline-success" href="@Url.Action("FeedbackList")"> More</a>
                             </div>
                         </div>
-                        <div class="col-md-3">
+
+                        <div class="col-md-4">
                             <div class="dash-card">
                                 <i class="fa fa-book" aria-hidden="true"></i>
                                 <p>Unique Patient Feedback</p>
                                 <h1 class="text-danger">@ViewBag.uniqueFeedback</h1>
-                                @*                                 <button type="button" class="btn btn-theme">Know More</button>
-                                *@
+                                <button type="button" class="btn btn-outline-danger"> More</button>
                             </div>
                         </div>
-                        <div class="col-md-3">
+
+                        <div class="col-md-4">
                             <div class="dash-card">
                                 <i class="fa fa-history" aria-hidden="true"></i>
-                                <p>Uttara Centre</p>
-                                <h1 class="text-warning">@ViewBag.countfromUttara</h1>
-                                @*                                 <button type="button" class="btn btn-theme">Know More</button>
-                                *@
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="dash-card">
-                                <i class="fa fa-check" aria-hidden="true"></i>
-                                <p>Kazipara Centre</p>
-                                <h1 class="text-success">@ViewBag.countfromKazipara</h1>
-                                @*                                 <button type="button" class="btn btn-theme">Know More</button>
-                                *@
+                                <p>Today's Feedback</p>
+                                <h1 class="text-warning">@ViewBag.todaysFeedback</h1>
+                                <button type="button" class="btn btn-outline-warning"> More</button>
                             </div>
                         </div>
                     </div>
                 </section>
-                @*
+
                 <section class="spacethis">
-                <div class="row">
-                <div class="col-md-6">
-                <h5 class="title">Requests</h5>
-                <div class="md-card">
-                <table class="table table-hover no-border">
-                <thead>
-                <tr>
-                <th scope="col">Name</th>
-                <th scope="col">LTR</th>
-                <th scope="col">Location</th>
-                <th scope="col">Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                <td>
-                <img class="table-user" src="image/man.jpg" alt=""> Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <span class="badge badge-pill badge-danger">Ongoing</span>
+@*                     <h3 class="title">Centre wise Survey </h3>
+ *@                    <div class="row mobile-scrollable">
 
-                </td>
-                </tr>
+                        @{
+                            List<CentreSurveyViewModel> centreSurveys = (List<CentreSurveyViewModel>)ViewBag.CentreSurveys;
+                        }
 
-
-
-                <tr>
-                <td>
-                <img class="table-user" src="image/user.jpg" alt="">
-                Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <span class="badge badge-pill badge-success">Delivered</span>
-
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/boy.jpg" alt="">
-                Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <span class="badge badge-pill badge-warning">Pending</span>
-
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/man.jpg" alt="">
-                Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <span class="badge badge-pill badge-danger">Ongoing</span>
-
-                </td>
-                </tr>
-
-                </tbody>
-                </table>
-                </div>
-
-                </div>
-
-                <div class="col-md-6">
-                <h5 class="title">Recent Delivered</h5>
-                <div class="md-card por">
-                <table class="table table-hover no-border">
-
-                <tbody>
-                <tr class="read-reviews-btn">
-                <td>
-                <img class="table-user" src="image/man.jpg" alt=""> Pearl Chavez
-                </td>
-
-                <td><img src="image/starts.png" alt=""></td>
-                <td align="right">
-                <button type="button" class="btn btn-sm btn-success">Read Reviews</button>
-
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/boy.jpg" alt=""> Pearl Chavez
-                </td>
-
-                <td><img src="image/starts.png" alt=""></td>
-                <td align="right">
-                <button type="button" class="btn btn-sm btn-success">Read Reviews</button>
-
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/user.jpg" alt=""> Pearl Chavez
-                </td>
-
-                <td><img src="image/starts.png" alt=""></td>
-                <td align="right">
-                <button type="button" class="btn btn-sm btn-success">Read Reviews</button>
-
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/man.jpg" alt=""> Pearl Chavez
-                </td>
-
-                <td><img src="image/starts.png" alt=""></td>
-                <td align="right">
-                <button type="button" class="btn btn-sm btn-success">Read Reviews</button>
-
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/man.jpg" alt=""> Pearl Chavez
-                </td>
-
-                <td><img src="image/starts.png" alt=""></td>
-                <td align="right">
-                <button type="button" class="btn btn-sm btn-success">Read Reviews</button>
-
-                </td>
-                </tr>
-
-                </tbody>
-                </table>
-
-
-                <div class="read-reviews">
-                <div class="name">
-                <h4>Mr. Jhone Doe</h4>
-                <img src="image/starts.png" alt="">
-                <i class="fa fa-times close-reviews"></i>
-
-                </div>
-                <p class="text-muted">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ipsa adipisci dolores dignissimos magnam. Ratione tenetur rem numquam officiis minus aliquid quaerat ipsum tempora ducimus blanditiis officia nobis nesciunt, dignissimos, expedita.
-                </p>
-                </div>
-
-                </div>
-
-                </div>
-                </div>
+                        @foreach (CentreSurveyViewModel item in centreSurveys)
+                        {
+                            <div class="col-md-3">
+                                <div class="dash-card">
+                                    <i class="@item.IconClass" aria-hidden="true"></i>
+                                    <p>@item.Name</p>
+                                    <h1 class="@item.TextClass">@item.SurveyCount</h1>
+                                    @*                                     <button type="button" class="@item.ButtonClass"> More</button>
+                                *@
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </section>
-
-                <section class="spacethis">
-                <div class="row">
-                <div class="col-md-6">
-                <h5 class="title">Map View</h5>
-                <div class="md-card">
-                <img class="map-img" src="image/map.png" alt="">
-                </div>
-                </div>
-
-                <div class="col-md-6">
-                <h5 class="title">New Orders</h5>
-                <div class="md-card">
-                <table class="table table-hover no-border">
-                <thead>
-                <tr>
-                <th scope="col">Name</th>
-                <th scope="col">LTR</th>
-                <th scope="col">Location</th>
-                <th scope="col">Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                <td>
-                <img class="table-user" src="image/man.jpg" alt=""> Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <button type="button" class="btn btn-sm btn-outline-success">process</button>
-                </td>
-                </tr>
-
-                <tr>
-                <td>
-                <img class="table-user" src="image/user.jpg" alt="">
-                Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <button type="button" class="btn btn-sm btn-outline-success">Process</button>
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/boy.jpg" alt="">
-                Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <button type="button" class="btn btn-sm btn-outline-success">process</button>
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <img class="table-user" src="image/man.jpg" alt="">
-                Pearl Chavez
-                </td>
-                <td>100<sub>LTR</sub></td>
-                <td>Noida</td>
-                <td>
-                <button type="button" class="btn btn-sm btn-outline-success">process</button>
-                </td>
-                </tr>
-
-                </tbody>
-                </table>
-                </div>
-
-                </div>
-
-
-                </div>
-                </section> *@
             </main>
         </div>
-    </div>
 
-    @* <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/controller.js"></script>
-    *@
+        @{
+            List<FeedbackViewModel> list = (List<FeedbackViewModel>)ViewBag.feedbackList;
+        }
+
+        <section class="spacethis">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Last 5 Feedback </div>
+                        <div class="card-body">
+                            <table class="table table-hover no-border">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Feedback Time</th>
+                                        <th scope="col">Centre Name</th>
+                                        <th scope="col">Survey</th>
+                                        <th scope="col">Patient Id</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in list)
+                                    {
+                                        <tr>
+                                            <td scope="col">@item.CreatedAt</td>
+                                            <td scope="col">@item.CentreName</td>
+                                            <td scope="col">@item.Survey</td>
+                                            <td scope="col">@item.PatientId</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+    </div>
+    @* <section class="spacethis">
+    <div class="row">
+    <div class="col-md-10">
+    <h5 class="title">Last 5 Feedback </h5>
+    <div class="md-card">
+    <table class="table table-hover no-border">
+    <thead>
+    <tr>
+    <th scope="col">Feedback Time</th>
+    <th scope="col">Centre Name</th>
+    <th scope="col">Survey</th>
+    <th scope="col">Patient Id</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in list)
+    {
+    <tr>
+    <th scope="col">@item.CreatedAt</th>
+    <th scope="col">@item.CentreName</th>
+    <th scope="col">@item.Survey</th>
+    <th scope="col">@item.PatientId</th>
+    </tr>
+    }
+    </tbody>
+    </table>
+    </div>
+    </div>
+    <div class="col-md-2">
+    <div class="dash-card">
+    <i class="fa fa-history" aria-hidden="true"></i>
+    <p>Today's Feedback</p>
+    <h1 class="text-success">@ViewBag.todaysFeedback</h1>
+    </div>
+    </div>
+    </div>
+    </section> *@
+
     <script>
+        // Refresh the page after a delay of 10 seconds
+        setTimeout(function () {
+            location.reload();
+        }, 10000);
+
         $('.drop').click(function () {
             $(this).toggleClass('open').siblings().removeClass('open');
         })
@@ -331,26 +190,3 @@
     </script>
 </body>
 </html>
-
-
-@* <div class="text-center">
-    <h1 class="home-title mt-4">Welcome to Customer Feedback Portal!</h1>
-    <div class="d-flex flex-column flex-sm-row align-items-center row mt-4">
-        <div class="col mt-3 mt-sm-0">
-            <p class="home-description">
-                @if (SignInManager.IsSignedIn(User))
-                {
-                    <text>
-                        Now start to create a new survey <a class="nav-link" asp-area="" asp-controller="Survey" asp-action="Index">My Surveys</a>
-                        to share with people.
-                    </text>
-                }
-                else
-                {
-                    <text>Now <a asp-area="Identity" asp-page="/Account/Register">register</a> and start to create a new survey to share with people. You can view the results of your surveys and analyze them.</text>
-                }
-            </p>
-        </div>
-    </div>
-</div> *@
-
