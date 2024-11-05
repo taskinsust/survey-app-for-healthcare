@@ -1,5 +1,5 @@
 
-# Survey App
+# Healthcare Survey App
 
 A web-based survey application that enables administrators to create and manage surveys, while allowing users to respond and view survey results in real-time. This application supports role-based access, survey analytics, and a user-friendly interface for creating and answering surveys.
 
@@ -60,4 +60,13 @@ A web-based survey application that enables administrators to create and manage 
 
 ## License
 - [MIT License](https://github.com/serhatyuna/survey-app/blob/master/LICENSE) 
+
+![image](https://github.com/user-attachments/assets/4d887bb9-eb25-4520-b164-3230d2f2673c)
+![image](https://github.com/user-attachments/assets/7e0b30b0-5d2f-4906-aa5b-121fa9841466)
+![image](https://github.com/user-attachments/assets/33278285-ffd7-4615-a342-eeed8affc8a9)
+![image](https://github.com/user-attachments/assets/d216c0ef-351f-4f04-84dd-37e40d787c92)
+![image](https://github.com/user-attachments/assets/aa47998e-03dd-41a0-b5e1-ede4fc682767)
+
+
+
 
