@@ -33,7 +33,8 @@ namespace SurveyApp.Web.Controllers
 
         private readonly ILogger<SurveyController> _logger;
 
-        public SurveyController(SurveyService surveyService, UserManager<ApplicationUser> userManager, 
+        // Constructor to initialize services, user manager, data protection, and logger
+        public SurveyController(SurveyService surveyService, UserManager<ApplicationUser> userManager,
             IDataProtectionProvider dataProtectionProvider, ILogger<SurveyController> logger)
         {
             _surveyService = surveyService;
@@ -42,6 +43,7 @@ namespace SurveyApp.Web.Controllers
             _logger = logger;
         }
 
+        // Displays a paginated list of surveys for the logged-in user
         public async Task<IActionResult> Index(int? page)
         {
             try
@@ -70,6 +72,7 @@ namespace SurveyApp.Web.Controllers
             }
         }
 
+        // Processes and returns a list of surveys in a paginated format (for AJAX requests)
         [HttpPost]
         public async Task<IActionResult> SurveyList(int draw = 0, int start = 0, int length = 0,
             string clientId = "", string linkId = "", string finalplanId = "")
@@ -124,6 +127,7 @@ namespace SurveyApp.Web.Controllers
             }
         }
 
+        // Displays survey creation form
         public IActionResult Create(SurveyCreateViewModel model)
         {
             int maxQuestions = 15;
@@ -139,6 +143,7 @@ namespace SurveyApp.Web.Controllers
             return View();
         }
 
+        // Handles survey creation form submission and saves survey data
         [HttpPost]
         [ActionName("Create")]
         [ValidateAntiForgeryToken]
@@ -171,6 +176,7 @@ namespace SurveyApp.Web.Controllers
             return RedirectToAction("Index");
         }
 
+        // Handles survey creation with AJAX and returns a JSON response
         [HttpPost]
         public async Task<IActionResult> CreateSurvey(SurveyViewModel surveyData)
         {
@@ -195,6 +201,7 @@ namespace SurveyApp.Web.Controllers
             return Json(new AjaxResponse() { IsSuccess = true });
         }
 
+        // Deletes a survey by ID for the logged-in user
         public async Task<IActionResult> Delete(int id)
         {
             var currentUser = await _userManager.GetUserAsync(User);
@@ -211,6 +218,7 @@ namespace SurveyApp.Web.Controllers
             return RedirectToAction("Index");
         }
 
+        // Retrieves survey details and displays them to the user
         public async Task<IActionResult> Details(int id)
         {
             var currentUser = await _userManager.GetUserAsync(User);
@@ -235,6 +243,7 @@ namespace SurveyApp.Web.Controllers
             return View(model);
         }
 
+        // Handles survey response submission
         [AllowAnonymous]
         public async Task<IActionResult> Answer(int id, int type = 0, string message = "")
         {
@@ -299,6 +308,7 @@ namespace SurveyApp.Web.Controllers
 
         }
 
+        // Displays the error view in case of unhandled exceptions
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
