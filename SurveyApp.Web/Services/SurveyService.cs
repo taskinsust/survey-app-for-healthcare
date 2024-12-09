@@ -191,7 +191,7 @@ namespace SurveyApp.Web.Services
 
         internal async Task<List<Survey>> GetAllSurveysAsync(ApplicationUser currentUser, int page)
         {
-            return await _context.Surveys.Where(x => x.UserId == currentUser.Id)
+            return await _context.Surveys//.Where(x => x.UserId == currentUser.Id)
                 .Include(s => s.Questions)
                 .Include(s => s.FilledSurveys)
                 .Skip((page - 1) * 10).Take(10).ToListAsync();

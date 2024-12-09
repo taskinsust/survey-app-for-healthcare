@@ -7,14 +7,14 @@
         position: relative;
     }
 
-    .custom-textarea textarea {
+        .custom-textarea textarea {
             border: none;
             border-bottom: 1px solid #ccc; /* Small horizontal line */
             padding-top: 20px; /* Space for the line */
-            outline: none; /* Remove default focus outline */     
-    }
+            outline: none; /* Remove default focus outline */
+        }
 
-    .custom-textarea::before {
+        .custom-textarea::before {
             content: "";
             position: absolute;
             left: 0;
@@ -22,7 +22,7 @@
             width: 100%;
             height: 1px;
             background-color: #000; /* Color of the small line */
-    }
+        }
 </style>
 
 @for (int i = 0; i < Model.Item1.Questions.Count; i++)
@@ -32,11 +32,11 @@
 
         <div class="mb-3"> Q@(i + 1). @Model.Item1.Questions[i].Title</div>
 
-        @if (Model.Item1.Questions[i].Options.Where(x => x.IsTextValue == false).OrderBy(x => x.Rank).ToList().Count < 1)
+        @if (Model.Item1.Questions[i].Options.Where(x => !x.IsTextValue).OrderBy(x => x.Rank).ToList().Count < 1)
         {
             //Add A Text Area
             <div class="custom-textarea">
-                <textarea asp-for="@Model.Item2.FilledSurveyOptions[i].Value" name="FilledSurveyOptions[@i].Value" id="FilledSurveyOptions_@(i)__Value" rows="" class="form-control"></textarea>
+                <textarea class="numbersOnly" asp-for="@Model.Item2.FilledSurveyOptions[i].Value" name="FilledSurveyOptions[@i].Value" id="FilledSurveyOptions_@(i)__Value" rows="" class="form-control"></textarea>
             </div>
         }
         else
@@ -52,9 +52,21 @@
                     if (list[j].Title == "Satisfied") { classname = "happy"; }
                     else if (list[j].Title == "Neutral") { classname = "neutral"; }
                     else if (list[j].Title == "Dissatisfied") { classname = "sad"; }
-                    <div class="pl-2 mb-1 form-check form-check-inline">
-                        <input class="@classname" asp-for="@Model.Item2.FilledSurveyOptions[i].OptionId" name="FilledSurveyOptions[@i].OptionId" id="FilledSurveyOptions_@(i)__OptionId" value="@Model.Item1.Questions[i].Options[j].Id" type="radio" />
-                    </div>
+
+                    //TODO: Add else statement to capture Yes/NO/Maybe Option
+                    else
+                    {
+                        <div class="pl-2 mb-1">
+                            <input asp-for="@Model.Item2.FilledSurveyOptions[i].OptionId" name="FilledSurveyOptions[@i].OptionId" id="FilledSurveyOptions_@(i)__OptionId" value="@Model.Item1.Questions[i].Options[j].Id" type="radio" />
+                            <span>@Model.Item1.Questions[i].Options[j].Title</span>
+                        </div>
+                    }
+                    if (!String.IsNullOrEmpty(classname))
+                    {
+                        <div class="pl-2 mb-1 form-check form-check-inline">
+                            <input class="@classname" asp-for="@Model.Item2.FilledSurveyOptions[i].OptionId" name="FilledSurveyOptions[@i].OptionId" id="FilledSurveyOptions_@(i)__OptionId" value="@Model.Item1.Questions[i].Options[j].Id" type="radio" />
+                        </div>
+                    }
                 }
             }
             else
@@ -75,3 +87,20 @@
     <a class="btn btn-outline-danger" asp-controller="Home" asp-action="Index">Cancel</a>
     <button type="submit" class="btn btn-outline-success">Send Feedback</button>
 </div>
+
+@* <script>
+
+    $(document).on("input propertychange", ".numbersOnly", function (event) {
+        var valStr = $(this).val();
+        var id = $(this).attr("id");
+        var val = parseInt(valStr);
+        if (isNaN(val)) {
+            $(this).val("");
+        }
+        else if (val < 0) {
+            $(this).val("");
+        } else {
+            $(this).val(val);
+        }
+    });
+</script> *@

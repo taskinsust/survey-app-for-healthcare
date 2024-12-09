@@ -332,6 +332,7 @@ namespace SurveyApp.Web.Controllers
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> SurveyCapture(int id, int type = 0, string message = "")
+        
         {
             try
             {
